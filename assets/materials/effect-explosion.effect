@@ -7,6 +7,8 @@ CCEffect %{
       properties: &props
         mainTexture:    { value: white }
         modelTexture:   { value: white }
+        size:           { value: [1, 1, 1], target: modelSize.xyz }
+        min:            { value: [0, 0, 0], target: minPos.xyz }
         mainColor:      { value: [1, 1, 1, 1], editor: { type: color } }
   - name: transparent
     passes:
@@ -22,7 +24,6 @@ CCEffect %{
       properties: *props
 }%
 
-
 CCProgram explosion-vs %{
   precision highp float;
 
@@ -32,23 +33,9 @@ CCProgram explosion-vs %{
   #include <legacy/local-batch>
   #include <legacy/input>
 
-  out vec4 v_color;
-  out vec2 v_uv;
-
-  uniform sampler2D modelTexture;
-
-  #define WIDTH 512
-  #define HEIGHT 512
-
-  vec4 getVertex(int col, int row) {
-    float u = (float(col) + 0.5) / float(WIDTH);
-    float v = (float(row) + 0.5) / float(HEIGHT);
-    return texture(modelTexture, vec2(u, v));
-  }
-
   #if CC_USE_MORPH
   #else
-  #if __VERSION__ < 450
+    #if __VERSION__ < 450
       in float a_vertexId;
       int getVertexId() {
         return int(a_vertexId);
@@ -59,6 +46,26 @@ CCProgram explosion-vs %{
       }
     #endif
   #endif
+
+  #define WIDTH 9
+  #define HEIGHT 9
+
+  out vec2 v_uv;
+  out vec4 v_color;
+  out vec4 v_position;
+
+  uniform sampler2D modelTexture;
+
+  uniform VsConstant {
+    vec4 modelSize;
+    vec4 minPos;
+  };
+
+  vec4 getVertex(int col, int row) {
+    float u = (float(col) + 0.5) / float(WIDTH);
+    float v = (float(row) + 0.5) / float(HEIGHT);
+    return texture(modelTexture, vec2(u, v));
+  }
 
   vec4 vert () {
     vec4 position;
@@ -74,13 +81,13 @@ CCProgram explosion-vs %{
 
     v_color = vec4(1.0, 1.0, 1.0, 1.0);
 
-    int index = getVertexId();
-    int row = index / int(WIDTH);
-    float col = mod(float(index), float(WIDTH));
-    vec4 point = getVertex(int(col), row);
-    v_color = point;
+    int vid = getVertexId();
+    float tid = floor(float(vid) / 3.0) * 3.0;
 
-    return cc_matProj * (cc_matView * matWorld) * position;
+    v_position = cc_matProj * (cc_matView * matWorld) * position;
+    v_position += tid / 16.0;
+
+    return v_position;
   }
 }%
 
@@ -89,13 +96,13 @@ CCProgram explosion-fs %{
   #include <legacy/output>
 
   in vec2 v_uv;
-  in vec3 v_position;
   in vec4 v_color;
+  in vec4 v_position;
 
   uniform sampler2D mainTexture;
   uniform sampler2D modelTexture;
 
-  uniform Constant {
+  uniform FsConstant {
     vec4 mainColor;
   };
 

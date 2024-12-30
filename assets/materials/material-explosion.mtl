@@ -10,9 +10,7 @@
   },
   "_techIdx": 0,
   "_defines": [
-    {
-      "USE_VERTEX_COLOR": true
-    }
+    {}
   ],
   "_states": [
     {
