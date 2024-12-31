@@ -57,10 +57,10 @@ CCProgram explosion-vs %{
   };
 
   vec4 getPositionByIndex(float index) {
-    float row = floor(index / textureSize.x);
+    float row = floor(index * textureSize.z);
     float col = mod(index, textureSize.x);
-    float u = (col + 0.5) / textureSize.x;
-    float v = (row + 0.5) / textureSize.y;
+    float u = (col + 0.5) * textureSize.z;
+    float v = (row + 0.5) * textureSize.w;
     return texture(vertexTexture, vec2(u, v));
   }
 
@@ -85,11 +85,18 @@ CCProgram explosion-vs %{
     center += getPositionByIndex(tid + 1.0).xyz;
     center += getPositionByIndex(tid + 2.0).xyz;
     center *= 0.33333;
-    center *= modelSize.xyz;
-    center += minPos.xyz;
 
-    vec3 dir = center - (modelSize * 0.5 + minPos).xyz;
+    vec3 pos = center * modelSize.xyz;
+    pos += minPos.xyz;
+    
+    vec3 dir = pos - (modelSize * 0.5 + minPos).xyz;
     dir = normalize(dir);
+
+    // move by normal
+
+    // move by target
+
+    // move back by normal
 
     // v_color = vec4(0.0, 0.0, 0.0, 1.0);
     // if (vid == 1) {

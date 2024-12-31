@@ -18,8 +18,12 @@ export class Spin extends Component {
     @property(CCFloat)
     speed = 0.01;
 
-    onLoad() {
+    onEnable() {
         input.on(Input.EventType.TOUCH_MOVE, this._move, this);
+    }
+
+    onDisable() {
+        input.off(Input.EventType.TOUCH_MOVE, this._move, this);
     }
 
     private _move(evt: EventTouch) {

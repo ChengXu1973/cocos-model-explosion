@@ -1,4 +1,4 @@
-import { _decorator, clamp, Component, EPSILON, gfx, ImageAsset, math, MeshRenderer, Sprite, SpriteFrame, Texture2D, utils, v4 } from "cc";
+import { _decorator, CCFloat, clamp, Component, EPSILON, gfx, ImageAsset, math, MeshRenderer, Node, Slider, Sprite, SpriteFrame, Texture2D, utils, v4 } from "cc";
 const { ccclass, property } = _decorator;
 
 const animParam = v4();
@@ -11,11 +11,56 @@ export class Main extends Component {
     @property(Sprite)
     sprite: Sprite = null;
 
-    onLoad() {
+    @property(Slider)
+    slide: Slider = null;
+
+    @property(CCFloat)
+    duration: number = 3;
+
+    @property(Node)
+    target: Node = null;
+
+    time = 0;
+
+    auto = true;
+
+    public onLoad() {
         if (!this.model) {
             return;
         }
+        this._listen();
         this._bake();
+    }
+
+    public update(dt: number) {
+        if (!this.auto) {
+            return;
+        }
+        this.time += dt;
+        if (this.time > this.duration) {
+            this.time -= this.duration;
+        }
+        this._setAnim(this.time / this.duration);
+    }
+
+    public onSlide() {
+        this._setAnim(this.slide.progress);
+    }
+
+    private _listen() {
+        this.slide.node.on(Node.EventType.TOUCH_START, this._onStart, this);
+        this.slide.handle.node.on(Node.EventType.TOUCH_START, this._onStart, this);
+        this.slide.node.on(Node.EventType.TOUCH_END, this._onEnd, this);
+        this.slide.handle.node.on(Node.EventType.TOUCH_END, this._onEnd, this);
+    }
+
+    private _onStart() {
+        this.auto = false;
+    }
+
+    private _onEnd() {
+        this.auto = true;
+        this.time = this.slide.progress * this.duration;
     }
 
     private _bake() {
@@ -26,13 +71,22 @@ export class Main extends Component {
         range.x = Math.max(range.x, EPSILON);
         range.y = Math.max(range.y, EPSILON);
         range.z = Math.max(range.z, EPSILON);
-        this.model.getSharedMaterial(0).setProperty("minPos", v4(min.x, min.y, min.z));
-        this.model.getSharedMaterial(0).setProperty("modelSize", v4(range.x, range.y, range.z));
+        this.model
+            .getSharedMaterial(0)
+            .setProperty("minPos", v4(min.x, min.y, min.z));
+        this.model
+            .getSharedMaterial(0)
+            .setProperty("modelSize", v4(range.x, range.y, range.z));
         // bake
         const positions = this._reCreateMesh();
         const posTex = this._bakeVertexTexture(positions, min, range);
         this.model.getSharedMaterial(0).setProperty("vertexTexture", posTex);
-        this.model.getSharedMaterial(0).setProperty("textureSize", v4(posTex.width, posTex.height));
+        this.model
+            .getSharedMaterial(0)
+            .setProperty(
+                "textureSize",
+                v4(posTex.width, posTex.height, 1 / posTex.width, 1 / posTex.height)
+            );
         // gl_VertexIndex
         this.model.mesh.renderingSubMeshes[0].enableVertexIdChannel(
             gfx.deviceManager.gfxDevice
@@ -46,9 +100,18 @@ export class Main extends Component {
     }
 
     private _reCreateMesh() {
-        const attrPositions = this.model.mesh.readAttribute(0, gfx.AttributeName.ATTR_POSITION) as Float32Array;
-        const attrNormals = this.model.mesh.readAttribute(0, gfx.AttributeName.ATTR_NORMAL) as Float32Array;
-        const attrTexCoord = this.model.mesh.readAttribute(0, gfx.AttributeName.ATTR_TEX_COORD) as Float32Array;
+        const attrPositions = this.model.mesh.readAttribute(
+            0,
+            gfx.AttributeName.ATTR_POSITION
+        ) as Float32Array;
+        const attrNormals = this.model.mesh.readAttribute(
+            0,
+            gfx.AttributeName.ATTR_NORMAL
+        ) as Float32Array;
+        const attrTexCoord = this.model.mesh.readAttribute(
+            0,
+            gfx.AttributeName.ATTR_TEX_COORD
+        ) as Float32Array;
         const indices = this.model.mesh.readIndices(0) as Uint32Array;
         // recreate mesh
         const count = indices.length;
@@ -73,7 +136,11 @@ export class Main extends Component {
         return positions;
     }
 
-    private _bakeVertexTexture(positions: number[], min: math.Vec3, range: math.Vec3) {
+    private _bakeVertexTexture(
+        positions: number[],
+        min: math.Vec3,
+        range: math.Vec3
+    ) {
         const len = positions.length / 3;
         const offset = Math.ceil(Math.log2(Math.sqrt(len)));
         const width = 1 << offset;
@@ -96,8 +163,14 @@ export class Main extends Component {
         return tex;
     }
 
-    private _setAnim() {
+    private _setAnim(progress: number) {
         const pass0 = this.model.getSharedMaterial(0).passes[0];
+        animParam.set(
+            this.target.position.x,
+            this.target.position.y,
+            this.target.position.z,
+            progress
+        );
         pass0.setUniform(pass0.getHandle("animParam"), animParam);
     }
 }
