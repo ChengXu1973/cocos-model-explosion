@@ -243,7 +243,7 @@
       "__id__": 8
     },
     "_mesh": {
-      "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@a804a",
+      "__uuid__": "1263d74c-8167-4928-91a6-4e2672411f47@17020",
       "__expectedType__": "cc.Mesh"
     },
     "_shadowCastingMode": 0,
@@ -259,7 +259,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Cube",
+    "_name": "model",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -526,7 +526,7 @@
     "_priority": 1073741824,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 567.191011235955,
+    "_orthoHeight": 478.48341232227483,
     "_near": 1,
     "_far": 2000,
     "_color": {
