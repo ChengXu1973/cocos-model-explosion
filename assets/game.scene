@@ -286,7 +286,7 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": -2,
+      "x": -1,
       "y": 0,
       "z": 1
     },
@@ -327,7 +327,7 @@
     "_prefab": null,
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 4,
+      "x": 2,
       "y": 0,
       "z": -2
     },
@@ -581,7 +581,7 @@
     "_priority": 1073741824,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 478.48341232227483,
+    "_orthoHeight": 360,
     "_near": 1,
     "_far": 2000,
     "_color": {

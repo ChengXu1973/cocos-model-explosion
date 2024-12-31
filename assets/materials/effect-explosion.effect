@@ -92,18 +92,17 @@ CCProgram explosion-vs %{
     vec3 dir = pos - (modelSize * 0.5 + minPos).xyz;
     dir = normalize(dir);
 
+    float progress = (1.0 - center.y) * 0.3;
     // move by normal
-
+    float p1 = clamp((animParam.w - progress) * 10.0, 0.0, 1.0);
     // move by target
-
+    float p2 = clamp((animParam.w - progress - 0.1) * 2.5, 0.0, 1.0);
     // move back by normal
+    float p3 = clamp((animParam.w - progress - 0.5) * 10.0, 0.0, 1.0);
 
-    // v_color = vec4(0.0, 0.0, 0.0, 1.0);
-    // if (vid == 1) {
-    //   v_color.r = 1.0;
-    // }
-
-    position += vec4(dir * 0.5, 0.0);
+    position += vec4(dir * 0.5, 0.0) * p1;
+    position += vec4(animParam.xyz, 0.0) * p2;
+    position -= vec4(dir * 0.5, 0.0) * p3;
     return cc_matProj * (cc_matView * matWorld) * position;
   }
 }%
